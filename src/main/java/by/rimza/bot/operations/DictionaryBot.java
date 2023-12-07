@@ -9,10 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
-
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
@@ -59,6 +58,16 @@ public class DictionaryBot extends TelegramLongPollingBot {
                 callBack = "not_found";
             }
             callBackSendMessage(chatId, callBack);
+            answerCallbackQuery(update);
+        }
+    }
+
+    public void answerCallbackQuery(Update update) {
+        AnswerCallbackQuery ae = AnswerCallbackQuery.builder().callbackQueryId(update.getCallbackQuery().getId()).cacheTime(1).build();
+        try {
+            execute(ae);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -99,6 +108,7 @@ public class DictionaryBot extends TelegramLongPollingBot {
         List<Word> list = dictionaryDAO.showAllWords(chatId);
         list.forEach(word -> stringBuilder.append(word.toString()).append("\n"));
         sendMessage(chatId, stringBuilder.toString());
+        sendMessageWithStartUpKeyboard(chatId);
     }
 
     public void sendMessageWithStartUpKeyboard(long chatId) {
